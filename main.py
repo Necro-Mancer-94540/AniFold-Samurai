@@ -1,6 +1,53 @@
-import os, requests, sys, time, PIL.Image
+import os, requests, sys, time, PIL.Image, PIL.ImageTk
 from tkinter import *
 import webbrowser
+from io import BytesIO
+def new(parent, ANIME_PATH):
+    parent.destroy()
+    parent = Frame(root)
+    parent.configure(bg=bg)
+    link = Label(parent, text='How to use?', fg='#0066ff', bg=bg, anchor='e', cursor="hand2")
+    link.pack(fill="x", pady=(50,0))
+    link.bind("<Button-1>", lambda e: webbrowser.open_new('https://github.com/Necro-Mancer-94540/AniFold-Samurai'))
+    Label(parent, text='Search:', font='5', anchor='w', bg=bg, fg=fg).pack(fill="x", pady=(50,0))
+    path = Entry(parent, width=100, font='5', bg=bg, fg=fg)
+    path.pack(fill="x", pady=(0,100))
+    def search(keyword):
+        query = '''
+        query ($id: Int, $page: Int, $perPage: Int, $search: String) {
+            Page (page: $page, perPage: $perPage) {
+                media (id: $id, search: $search) {
+                    id
+                    title {
+                        english
+                        romaji
+                    }
+                    coverImage{
+                        extraLarge
+                    }
+                }
+            }
+        }
+        '''
+        variables = {
+            'search': keyword,
+            'page': 1,
+            'perPage': 12
+        }   
+        response = requests.post('https://graphql.anilist.co', json={'query': query, 'variables': variables}).json()['data']['Page']['media']
+        display = Frame(parent)
+        display.pack()
+        for r in range(3):
+            for c in range(4):
+                for anime in response:
+                    cover = anime['coverImage']['extraLarge']
+                    img = PIL.ImageTk.PhotoImage(PIL.Image.open(BytesIO(requests.get(cover).content)))
+                    label = Label(display, image=img)
+                    label.image = img
+                    label.grid(row=r, column=c)
+                    root.update()
+    Button(parent, text='Search', bg=bg, fg=fg, width=50, font='5', command=lambda:search(path.get())).pack(pady=(0,5))
+    parent.pack()
 def reset(ANIME_PATH):
     log.insert(END, 'TASK STARTED\n')
     log.see(END)
@@ -339,11 +386,11 @@ def main():
     Label(parent, text='Path to Anime collection:', font='5', anchor='w', bg=bg, fg=fg).pack(fill="x", pady=(50,0))
     path = Entry(parent, width=100, font='5', bg=bg, fg=fg)
     path.pack(fill="x", pady=(0,100))
-    Button(parent, text='New', bg=bg, fg=fg, width=50, font='5', command=lambda:reset(path.get())).pack(pady=(0,5))
+    Button(parent, text='New', bg=bg, fg=fg, width=50, font='5', command=lambda:new(parent,path.get())).pack(pady=(0,5))
     Button(parent, text='Update', bg=bg, fg=fg, width=50, font='5', command=lambda:generate(path.get())).pack(pady=(0,5))
-    Button(parent, text='Inspect', bg=bg, fg=fg, width=50, font='5', command=lambda:setIcon(path.get())).pack(pady=(0,25))
-    Button(parent, text='Reset', bg=bg, fg=fg, width=50, font='5', command=lambda:missing(path.get())).pack(pady=(25,25))
-    Button(parent, text='Exit', bg=bg, fg=fg, width=50, font='5', command=lambda:missing(path.get())).pack(pady=(25,0))
+    Button(parent, text='Inspect', bg=bg, fg=fg, width=50, font='5', command=lambda:setIcon(path.get())).pack(pady=(0,5))
+    Button(parent, text='Reset', bg=bg, fg=fg, width=50, font='5', command=lambda:missing(path.get())).pack(pady=(0,5))
+    Button(parent, text='Exit', bg=bg, fg=fg, width=50, font='5', command=lambda:root.destroy()).pack(pady=(0,5))
     parent.pack()
 
 # globals
@@ -353,6 +400,7 @@ root = Tk()
 root.title('AniFold Samurai')
 root.state('zoomed')
 root.configure(bg=bg)
+root.iconbitmap('E:\\Important\\Folder Controller\\Icons\\Exam Hacker.ico')
 main()
 root.mainloop()
 # other
