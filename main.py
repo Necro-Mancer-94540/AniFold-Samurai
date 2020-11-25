@@ -36,16 +36,19 @@ def new(parent, ANIME_PATH):
         }   
         response = requests.post('https://graphql.anilist.co', json={'query': query, 'variables': variables}).json()['data']['Page']['media']
         display = Frame(parent)
+        display.configure()
         display.pack()
-        for r in range(3):
-            for c in range(4):
-                for anime in response:
-                    cover = anime['coverImage']['extraLarge']
-                    img = PIL.ImageTk.PhotoImage(PIL.Image.open(BytesIO(requests.get(cover).content)))
-                    label = Label(display, image=img)
-                    label.image = img
-                    label.grid(row=r, column=c)
-                    root.update()
+        r, c = 0, 0
+        for anime in response:
+            cover = anime['coverImage']['extraLarge']
+            img = PIL.ImageTk.PhotoImage(PIL.Image.open(BytesIO(requests.get(cover).content)))
+            label = Label(display, image=img, width=250, height=250)
+            label.image = img
+            if r%4:
+                r += 1
+            label.grid(row=r, column=c)
+            root.update()
+            c += 1
     Button(parent, text='Search', bg=bg, fg=fg, width=50, font='5', command=lambda:search(path.get())).pack(pady=(0,5))
     parent.pack()
 def reset(ANIME_PATH):
@@ -390,7 +393,7 @@ def main():
     Button(parent, text='Update', bg=bg, fg=fg, width=50, font='5', command=lambda:generate(path.get())).pack(pady=(0,5))
     Button(parent, text='Inspect', bg=bg, fg=fg, width=50, font='5', command=lambda:setIcon(path.get())).pack(pady=(0,5))
     Button(parent, text='Reset', bg=bg, fg=fg, width=50, font='5', command=lambda:missing(path.get())).pack(pady=(0,5))
-    Button(parent, text='Exit', bg=bg, fg=fg, width=50, font='5', command=lambda:root.destroy()).pack(pady=(0,5))
+    Button(parent, text='Exit', bg=bg, fg=fg, width=50, font='5', command=lambda:exit()).pack(pady=(0,5))
     parent.pack()
 
 # globals
@@ -398,7 +401,7 @@ bg = '#ffffff'
 fg = '#000000'
 root = Tk()
 root.title('AniFold Samurai')
-root.state('zoomed')
+root.attributes("-fullscreen", True)
 root.configure(bg=bg)
 root.iconbitmap('E:\\Important\\Folder Controller\\Icons\\Exam Hacker.ico')
 main()
