@@ -147,7 +147,7 @@ def setIcon(ANIME_PATH):
                 index.close()
                 query = '''
                 query ($id: Int) {
-                    Media (id: $id, type: ANIME) {
+                    Media (id: $id, type: Manga) {
                         id
                         title {
                             english
