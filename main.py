@@ -35,20 +35,20 @@ def new(parent, ANIME_PATH):
         variables = {
             'search': keyword,
             'page': 1,
-            'perPage': 12
+            'perPage': 10
         }   
         response = requests.post('https://graphql.anilist.co', json={'query': query, 'variables': variables}).json()['data']['Page']['media']
         display = Frame(parent)
-        display.configure()
         display.pack()
         r, c = 0, 0
         for anime in response:
             cover = anime['coverImage']['extraLarge']
             img = PIL.ImageTk.PhotoImage(PIL.Image.open(BytesIO(requests.get(cover).content)))
-            label = Label(display, image=img, width=250, height=250)
+            label = Label(display, image=img, width=200, height=200)
             label.image = img
-            if r%4:
+            if not(c%5):
                 r += 1
+                c = 0
             label.grid(row=r, column=c)
             root.update()
             c += 1
